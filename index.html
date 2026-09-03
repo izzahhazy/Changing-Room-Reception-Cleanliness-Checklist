@@ -158,7 +158,7 @@
         Every tick is saved straight to your Google Sheet, one tab per month (e.g. <code>August 2026</code>), laid out to match this form so you can print directly from Sheets too.<br><br>
         <b>One-time setup:</b><br>
         1. Open a blank Google Sheet → <b>Extensions → Apps Script</b><br>
-        2. Copy all the code from the included file <code>toilet_apps_script.gs</code>, paste it in, then <b>Deploy → New deployment → Web app</b>, "Who has access" = Anyone<br>
+        2. Copy all the code from the included file <code>changing_room_apps_script.gs</code>, paste it in, then <b>Deploy → New deployment → Web app</b>, "Who has access" = Anyone<br>
         3. Copy the deployment URL, paste it above, tap Save URL.
       </div>
     </div>
@@ -194,7 +194,7 @@ function blankDays(monthKey){
   for(let d=1; d<=31; d++){
     const row = {day:d};
     ITEMS.forEach(it=> row[it.k] = false);
-    DONE_BY.forEach(it=> row[it.k] = false);
+    DONE_BY.forEach(it=> row[it.k] = '');
     days.push(row);
   }
   return days;
@@ -332,7 +332,7 @@ function renderGrid(){
       html += `<td><span class="chip ${row[it.k]?'on':''}" data-idx="${idx}" data-item="${it.k}">${row[it.k]?'✓':''}</span></td>`;
     });
     DONE_BY.forEach(it=>{
-      html += `<td><span class="chip ${row[it.k]?'on':''}" data-idx="${idx}" data-item="${it.k}">${row[it.k]?'✓':''}</span></td>`;
+      html += `<td><input type="text" class="checkedby-input" data-idx="${idx}" data-donebykey="${it.k}" value="${escapeHtml(row[it.k])}" placeholder="Name"></td>`;
     });
     html += '</tr>';
   });
@@ -369,11 +369,9 @@ el('gridTable').addEventListener('click', e=>{
 });
 el('gridTable').addEventListener('input', e=>{
   const t = e.target;
-  if(t.dataset.role==='checkedby'){
-    const idx = +t.dataset.idx;
-    const initials = toInitials(t.value);
-    state.days[idx].checkedBy = initials;
-    if(t.value !== initials) t.value = initials;
+  if(t.dataset.donebykey){
+    const idx = +t.dataset.idx, key = t.dataset.donebykey;
+    state.days[idx][key] = t.value;
     dirty = true; setStatus('Unsaved','unsaved');
     scheduleAutoSave();
   }
@@ -413,7 +411,7 @@ el('deleteBtn').addEventListener('click', async ()=>{
 function buildPrintPage(data, includeHeader){
   const rowsHtml = data.days.map(row=>{
     const itemCells = ITEMS.map(it=>`<td>${row[it.k]?'✓':''}</td>`).join('');
-    const doneByCells = DONE_BY.map(it=>`<td>${row[it.k]?'✓':''}</td>`).join('');
+    const doneByCells = DONE_BY.map(it=>`<td class="psig">${escapeHtml(row[it.k])}</td>`).join('');
     return `<tr><td>${row.day}</td>${itemCells}${doneByCells}</tr>`;
   }).join('');
   const headerHtml = includeHeader ? `
