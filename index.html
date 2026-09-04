@@ -156,7 +156,7 @@
         <b>One-time setup:</b><br>
         1. Open a blank Google Sheet → <b>Extensions → Apps Script</b><br>
         2. Copy all the code from the included file <code>changing_room_apps_script.gs</code>, paste it in, then <b>Deploy → New deployment → Web app</b>, "Who has access" = Anyone<br>
-        3. Copy the deployment URL, paste it above, tap Save URL.
+        3. Copy the deployment URL, paste it into the <code>DEFAULT_API_URL</code> constant near the top of <code>index.html</code>'s script, then re-upload/re-deploy the page. Pasting it here in the box only saves it on this one device — putting it in <code>DEFAULT_API_URL</code> is what makes every device open the page already connected.
       </div>
     </div>
   </div>
@@ -169,7 +169,11 @@
 function safeGet(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
 function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 
-let apiUrl = safeGet('changingroom_api_url') || '';
+// Paste your deployed Apps Script Web App URL here once — this makes every
+// device that opens this page connect automatically, with no per-device setup.
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyBQkdBJ-sBXl5h8sUoTdNi3ZiiwYblO9pQgHiLgDMnjkgWNcS5CEy9dwe3bv9PL9V4mg/exec';
+
+let apiUrl = safeGet('changingroom_api_url') || DEFAULT_API_URL;
 const el = id => document.getElementById(id);
 const memStore = {};
 
